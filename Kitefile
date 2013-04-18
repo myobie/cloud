@@ -12,16 +12,16 @@ red2 = SlaveRedis.create "red2", follow: red1, failover: true
 mem1 = Memcached.create "mem1"
 
 app_config = {
-	memcached: mem1,
-	database: {
-		master: db1,
-		slave: db2
-	},
-	redis: {
-		master: red1,
-		slave: red2
-	},
-	git_url: "git://github.com/myobie/something.git"
+  memcached: mem1,
+  database: {
+    master: db1,
+    slave: db2
+  },
+  redis: {
+    master: red1,
+    slave: red2
+  },
+  git_url: "git://github.com/myobie/something.git"
 }
 
 app1 = Application.create "app1", app_config
