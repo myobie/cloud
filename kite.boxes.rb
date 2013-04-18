@@ -26,6 +26,15 @@ class Redis < Box
 	memory "1GB"
 	deps 'myobie.redis'
 	config { Kite.config['redis'] }
+	
+	def config_file
+	  @databases = 16
+	  render text: <<-EOF
+some file things
+databases <%= @databases %>
+more file things
+	  EOF
+	end
 end
 
 class SlaveRedis < Redis

@@ -37,3 +37,5 @@ Resque.create "job1", redis: red1, database: { master: db1, slave: db2 }
 
 
 puts Kite.boxes.inspect
+puts "*"*80
+puts red1.config_file

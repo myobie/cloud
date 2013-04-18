@@ -1,4 +1,5 @@
 require 'yaml'
+require 'erb'
 
 module DigitalOcean
 	class CloudProvider
@@ -101,5 +102,17 @@ class Box
 		@memory = @opts['memory'] || self.class.memory
 		@ip = @opts['ip']
 		@backups = !!@opts['backups']
+	end
+	
+	def render(file: nil, text: nil)
+		contents = case
+			when file
+				File.read(file)
+			when text
+				text
+			end
+		
+		erb = ERB.new(contents)
+		erb.result(binding)
 	end
 end
