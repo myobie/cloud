@@ -1,0 +1,7 @@
+* Use name to lookup an existing box and link Box instance to the server
+* Provision ip's if one isn't provided and an existing box isn't found with the same name
+* Store the current config to a file in ~/.kite/project-name
+* Compare current config to stored and print out any differences
+* Implement simple migrations from old config to current config
+* Start building babushka scripts for the deps I need
+* Use net/ssh2 to connect to the boxes and run the deps necessary

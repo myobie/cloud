@@ -1,0 +1,47 @@
+provider:
+  client_key: abc
+  api_key: xyz
+  ssh_key_path: "~/.ssh/id_rsa"
+  ssh_user: jacob
+  
+external_ips:
+  - 0.0.0.1
+  - 0.0.0.2
+
+load_balancer:
+  nginx:
+    assets: true
+    proxy: haproxy
+    bind:
+      http: 80
+      https: 443
+  haproxy:
+    algorithm: leastconn
+    bind:
+      3000: 80
+      3001: 81
+  rails:
+    precompile_assets: true
+    
+application:
+  nginx:
+    proxy: unicorn
+    bind:
+      http: 80
+      https: 81
+  rails:
+    precomiple_assets: true
+    git:
+      post_receive: restart_unicorn
+    unicorn:
+      processes: 6
+      bind: 4000
+
+redis:
+  redis:
+    aof: false
+    
+slave_redis:
+  redis:
+    aof: true
+    appendfsync: everysec
