@@ -2,21 +2,21 @@ So the goal here is to build a ruby framework for describing servers, their conf
 
 # The end goal
 
-    > kite check
+    > cloud check
 
 ... would print out any differences between the current config and the one in use.
 
-    > kite migrate
+    > cloud migrate
 
 ... would resize servers, update configs, and run any deps on servers to migrate them to the new current config. This would refuse to do any destructive actions, but let you know how you can handle it manually.
 
-    > kite ssh app1
+    > cloud ssh app1
 
 ... would ssh to that box.
 
 # Principles
 
-* I want to write ruby, not some weirdo dsl
+* I want to write ruby
 * One can use yaml for some things, but it's not required and please don't overdo it
 * I want my ruby code to actually resemble how my servers are setup
 * My code should easily be able to generate a graph showing how all my boxes are connected and talking to each other
