@@ -28,7 +28,6 @@ class Redis < Box
   config { Kite.config['redis'] }
   
   def config_file
-    @databases = 16
     render file: "./templates/redis.conf.erb"
   end
   
@@ -46,6 +45,7 @@ class Redis < Box
     use :syslog_enabled
     use :syslog_ident, default: "redis"
     use :syslog_facility, default: "local0"
+    use :databases, default: 16
     use :save_points, default: []
     use :stop_writes_on_bgsave_error, default: true
     use :rdbcompression, default: true

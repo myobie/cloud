@@ -33,7 +33,7 @@ syslog-facility <%= syslog_facility %>
 syslog-enabled no
 <% end %>
 
-databases <%= @databases %>
+databases <%= databases %>
 
 <% save_points.each do |point| %>
 save <%= point['seconds'] %> <%= point['keys'] %>

@@ -40,6 +40,7 @@ application:
 redis:
   redis:
     aof: false
+    databases: 2
     
 slave_redis:
   redis:

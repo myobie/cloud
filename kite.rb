@@ -1,6 +1,19 @@
 require 'yaml'
 require 'erb'
 
+class Hash
+  def descend(key_string)
+    if key_string.nil? || key_string.empty?
+      self
+    else
+      keys = key_string.split(".")
+      keys.reduce(self) do |memo, key|
+        memo[key]
+      end
+    end
+  end
+end
+
 module Kite
   def self.provider
     @provider
@@ -82,10 +95,10 @@ class Box
     query ||= :"#{name}?"
     value ||= name
     default_method_name = :"default_#{value}"
-    current_config = self.current_config_scope.dup # is there a better way to do this?
+    config_scope = self.current_config_scopes.join(".")
 
     define_method query do
-      !!current_config[name]
+      !!config_for_keys(config_scope, name)
     end
 
     define_method default_method_name do
@@ -93,26 +106,30 @@ class Box
     end
 
     define_method value do
-      current_config.fetch(name) { send(default_method_name) }
+      config_for_keys(config_scope, name) || send(default_method_name)
     end
   end
 
-  def self.current_config_scope
-    self.current_config_scopes.first
-  end
-
   def self.current_config_scopes
-    @current_config_scope ||= [self.config]
+    @current_config_scopes ||= []
   end
 
   def self.with_config_scope(scope_name)
-    self.current_config_scopes.push(self.current_config_scope[scope_name])
+    self.current_config_scopes.push(scope_name)
     yield
     self.current_config_scopes.pop
   end
 
   def config
   	@opts
+  end
+
+  def config_for_keys(*keys)
+    config_for_string(keys.join("."))
+  end
+
+  def config_for_string(key_string)
+    config.descend(key_string)
   end
 
   def initialize(name, opts = {})
