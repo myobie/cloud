@@ -1,0 +1,265 @@
+<% if daemonize? %>
+daemonize yes
+<% else %>
+daemonize no
+<% end %>
+
+pidfile <%= pidfile %>
+
+port <%= port %>
+
+<% if should_bind? %>
+bind <%= bind_address %>
+<% end %>
+
+<% if unixsocket? && unixsocketperm? %>
+unixsocket <%= unixsocket %>
+unixsocketperm <%= unixsocketperm %>
+<% end %>
+
+timeout <%= timeout %>
+
+tcp-keepalive <%= tcp_keepalive %>
+
+loglevel <%= loglevel %>
+
+logfile <%= logfile %>
+
+<% if syslog_enabled? %>
+syslog-enabled yes
+syslog-ident <%= syslog_ident %>
+syslog-facility <%= syslog_facility %>
+<% else %>
+syslog-enabled no
+<% end %>
+
+databases <%= @databases %>
+
+<% save_points.each do |point| %>
+save <%= point['seconds'] %> <%= point['keys'] %>
+<% end %>
+
+<% if stop_writes_on_bgsave_error? %>
+stop-writes-on-bgsave-error yes
+<% else %>
+stop-writes-on-bgsave-error no
+<% end %>
+
+<% if rdbcompression? %>
+rdbcompression yes
+<% else %>
+rdbcompression no
+<% end %>
+
+<% if rdbchecksum? %>
+rdbchecksum yes
+<% else %>
+rdbchecksum no
+<% end %>
+
+dbfilename <%= dbfilename %>
+
+dir <%= dir %>
+
+# NOTE: slave stuff is very much unfinished
+
+<% if following? %>
+slaveof <%= following.ip %> <%= following.port %>
+
+<% if following.requires_password? %>
+masterauth <%= following.password %>
+<% end %>
+
+<% if slave_serve_stale_data? %>
+slave-serve-stale-data yes
+<% else %>
+slave-serve-stale-data no
+<% end %>
+
+<% if slave_read_only? %>
+slave-read-only yes
+<% else %>
+slave-read-only no
+<% end %>
+
+repl-ping-slave-period <%= repl_ping_slave_period %> # default is 10
+repl-timeout <%= repl_timeout %> # default 60
+
+<% if repl_disable_tcp_nodelay? %>
+repl-disable-tcp-nodelay yes
+<% else %>
+repl-disable-tcp-nodelay no
+<% end %>
+
+slave-priority <%= slave_priority %> # default is 100
+<% end %>
+
+<% if password? %>
+requirepass <%= password %>
+<% end %>
+
+<% rename_commands.each do |command| %>
+rename-comment <%= command['current_name'] %> <%= command['new_name'] %>
+<% end %>
+
+<% if maxclients? %>
+maxclients <%= maxclients %>
+<% end %>
+
+<% if maxmemory? %>
+maxmemory <%= maxmemory %>
+<% end %>
+
+<% if maxmemory_policy? %>
+maxmemory-policy <%= maxmemory_policy %>
+<% end %>
+
+<% if maxmemory_samples? %>
+maxmemory-samples <%= maxmemory_samples %>
+<% end %>
+
+<% if aof? %>
+appendonly yes
+<% else %>
+appendonly no
+<% end %>
+
+appendfilename <%= appendfilename %>
+appendfsync <%= appendfsync %>
+
+<% if no_appendfsync_on_rewrite? %>
+no-appendfsync-on-rewrite no
+<% else %>
+no-appendfsync-on-rewrite yes
+<% end %>
+
+auto-aof-rewrite-percentage <%= auto_aof_rewrite_percentage %>
+auto-aof-rewrite-min-size <%= auto_aof_rewrite_min_size %>
+
+lua-time-limit <%= lua_time_limit %>
+
+slowlog-log-slower-than <%= slowlog_log_slower_than %>
+
+slowlog-max-len <%= slowlog_max_len %>
+
+# NOTE: I am going to do the rest later
+
+
+
+
+############################### ADVANCED CONFIG ###############################
+
+# Hashes are encoded using a memory efficient data structure when they have a
+# small number of entries, and the biggest entry does not exceed a given
+# threshold. These thresholds can be configured using the following directives.
+hash-max-ziplist-entries 512
+hash-max-ziplist-value 64
+
+# Similarly to hashes, small lists are also encoded in a special way in order
+# to save a lot of space. The special representation is only used when
+# you are under the following limits:
+list-max-ziplist-entries 512
+list-max-ziplist-value 64
+
+# Sets have a special encoding in just one case: when a set is composed
+# of just strings that happens to be integers in radix 10 in the range
+# of 64 bit signed integers.
+# The following configuration setting sets the limit in the size of the
+# set in order to use this special memory saving encoding.
+set-max-intset-entries 512
+
+# Similarly to hashes and lists, sorted sets are also specially encoded in
+# order to save a lot of space. This encoding is only used when the length and
+# elements of a sorted set are below the following limits:
+zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+
+# Active rehashing uses 1 millisecond every 100 milliseconds of CPU time in
+# order to help rehashing the main Redis hash table (the one mapping top-level
+# keys to values). The hash table implementation Redis uses (see dict.c)
+# performs a lazy rehashing: the more operation you run into an hash table
+# that is rehashing, the more rehashing "steps" are performed, so if the
+# server is idle the rehashing is never complete and some more memory is used
+# by the hash table.
+# 
+# The default is to use this millisecond 10 times every second in order to
+# active rehashing the main dictionaries, freeing memory when possible.
+#
+# If unsure:
+# use "activerehashing no" if you have hard latency requirements and it is
+# not a good thing in your environment that Redis can reply form time to time
+# to queries with 2 milliseconds delay.
+#
+# use "activerehashing yes" if you don't have such hard requirements but
+# want to free memory asap when possible.
+activerehashing yes
+
+# The client output buffer limits can be used to force disconnection of clients
+# that are not reading data from the server fast enough for some reason (a
+# common reason is that a Pub/Sub client can't consume messages as fast as the
+# publisher can produce them).
+#
+# The limit can be set differently for the three different classes of clients:
+#
+# normal -> normal clients
+# slave  -> slave clients and MONITOR clients
+# pubsub -> clients subcribed to at least one pubsub channel or pattern
+#
+# The syntax of every client-output-buffer-limit directive is the following:
+#
+# client-output-buffer-limit <class> <hard limit> <soft limit> <soft seconds>
+#
+# A client is immediately disconnected once the hard limit is reached, or if
+# the soft limit is reached and remains reached for the specified number of
+# seconds (continuously).
+# So for instance if the hard limit is 32 megabytes and the soft limit is
+# 16 megabytes / 10 seconds, the client will get disconnected immediately
+# if the size of the output buffers reach 32 megabytes, but will also get
+# disconnected if the client reaches 16 megabytes and continuously overcomes
+# the limit for 10 seconds.
+#
+# By default normal clients are not limited because they don't receive data
+# without asking (in a push way), but just after a request, so only
+# asynchronous clients may create a scenario where data is requested faster
+# than it can read.
+#
+# Instead there is a default limit for pubsub and slave clients, since
+# subscribers and slaves receive data in a push fashion.
+#
+# Both the hard or the soft limit can be disabled by setting them to zero.
+client-output-buffer-limit normal 0 0 0
+client-output-buffer-limit slave 256mb 64mb 60
+client-output-buffer-limit pubsub 32mb 8mb 60
+
+# Redis calls an internal function to perform many background tasks, like
+# closing connections of clients in timeot, purging expired keys that are
+# never requested, and so forth.
+#
+# Not all tasks are perforemd with the same frequency, but Redis checks for
+# tasks to perform accordingly to the specified "hz" value.
+#
+# By default "hz" is set to 10. Raising the value will use more CPU when
+# Redis is idle, but at the same time will make Redis more responsive when
+# there are many keys expiring at the same time, and timeouts may be
+# handled with more precision.
+#
+# The range is between 1 and 500, however a value over 100 is usually not
+# a good idea. Most users should use the default of 10 and raise this up to
+# 100 only in environments where very low latency is required.
+hz 10
+
+# When a child rewrites the AOF file, if the following option is enabled
+# the file will be fsync-ed every 32 MB of data generated. This is useful
+# in order to commit the file to the disk more incrementally and avoid
+# big latency spikes.
+aof-rewrite-incremental-fsync yes
+
+################################## INCLUDES ###################################
+
+# Include one or more other config files here.  This is useful if you
+# have a standard template that goes to all Redis server but also need
+# to customize a few per-server settings.  Include files can include
+# other files, so use this wisely.
+#
+# include /path/to/local.conf
+# include /path/to/other.conf

@@ -1,7 +1,8 @@
 require './kite'
 require './kite.boxes'
+require './kite.provider'
 
-Kite.provider = DigitalOcean::CloudProvider.new Kite.config['provider']
+Kite.provider = DigitalOcean::Provider.new Kite.config['provider']
 
 db1 = Database.create "db1"
 db2 = SlaveDatabase.create "db2", follow: db1, failover: true

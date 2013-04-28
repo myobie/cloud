@@ -1,14 +1,6 @@
 require 'yaml'
 require 'erb'
 
-module DigitalOcean
-  class CloudProvider
-    def initialize(opts = {})
-      @opts = opts
-    end
-  end
-end
-
 module Kite
   def self.provider
     @provider
@@ -84,6 +76,43 @@ class Box
     end
     
     @config
+  end
+
+  def self.use(name, default: nil, query: nil, value: nil)
+    query ||= :"#{name}?"
+    value ||= name
+    default_method_name = :"default_#{value}"
+    current_config = self.current_config_scope.dup # is there a better way to do this?
+
+    define_method query do
+      !!current_config[name]
+    end
+
+    define_method default_method_name do
+      default
+    end
+
+    define_method value do
+      current_config.fetch(name) { send(default_method_name) }
+    end
+  end
+
+  def self.current_config_scope
+    self.current_config_scopes.first
+  end
+
+  def self.current_config_scopes
+    @current_config_scope ||= [self.config]
+  end
+
+  def self.with_config_scope(scope_name)
+    self.current_config_scopes.push(self.current_config_scope[scope_name])
+    yield
+    self.current_config_scopes.pop
+  end
+
+  def config
+  	@opts
   end
 
   def initialize(name, opts = {})
