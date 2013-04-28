@@ -38,6 +38,52 @@ module Kite
   end
 end
 
+module Role
+  def self.included(base)
+    base.extend self
+  end
+
+  def deps(*deps)
+    deps = Array(deps)
+    @deps ||= []
+
+    unless deps.empty?
+      @deps.concat(deps)
+    end
+
+    @deps
+  end
+
+  def use(name, default: nil, query: nil, value: nil)
+    query ||= :"#{name}?"
+    value ||= name
+    default_method_name = :"default_#{value}"
+    config_scope = self.current_config_scopes.join(".")
+
+    define_method query do
+      !!config_for_keys(config_scope, name)
+    end
+
+    define_method default_method_name do
+      default
+    end
+
+    define_method value do
+      config_for_keys(config_scope, name) || send(default_method_name)
+    end
+  end
+
+  def current_config_scopes
+    @current_config_scopes ||= []
+  end
+
+  def with_config_scope(scope_name)
+    self.current_config_scopes.push(scope_name)
+    yield
+    self.current_config_scopes.pop
+  end
+end
+
 class Box
   attr_accessor :name, :opts, :memory, :ip
   
@@ -45,17 +91,6 @@ class Box
     box = new(name, opts)
     Kite.boxes << box
     box
-  end
-  
-  def self.deps(*deps)
-    deps = Array(deps)
-    @deps ||= []
-    
-    unless deps.empty?
-      @deps.concat(deps)
-    end
-    
-    @deps
   end
   
   def self.memory(mem = nil)
@@ -89,35 +124,6 @@ class Box
     end
     
     @config
-  end
-
-  def self.use(name, default: nil, query: nil, value: nil)
-    query ||= :"#{name}?"
-    value ||= name
-    default_method_name = :"default_#{value}"
-    config_scope = self.current_config_scopes.join(".")
-
-    define_method query do
-      !!config_for_keys(config_scope, name)
-    end
-
-    define_method default_method_name do
-      default
-    end
-
-    define_method value do
-      config_for_keys(config_scope, name) || send(default_method_name)
-    end
-  end
-
-  def self.current_config_scopes
-    @current_config_scopes ||= []
-  end
-
-  def self.with_config_scope(scope_name)
-    self.current_config_scopes.push(scope_name)
-    yield
-    self.current_config_scopes.pop
   end
 
   def config
