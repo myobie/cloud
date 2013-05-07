@@ -22,6 +22,7 @@ module DigitalOcean
 
       if found
         found.hydrate!
+        found
       end
     end
 
@@ -46,7 +47,7 @@ module DigitalOcean
   end
 
   class Droplet
-    attr_accessor :id, :image_id, :name, :region_id, :size_id, :status
+    attr_accessor :id, :image_id, :name, :region_id, :size_id, :status, :ip
 
     def initialize(api = nil, opts = {})
       if api.is_a?(Hash)
@@ -64,6 +65,19 @@ module DigitalOcean
       @region_id = opts["region_id"]
       @size_id = opts["size_id"]
       @status = opts["status"]
+      @ip = opts["ip_address"]
+    end
+
+    def to_h
+      {
+        id: id,
+        image_id: image_id,
+        name: name,
+        region_id: region_id,
+        size_id: size_id,
+        status: status,
+        ip: ip
+      }
     end
 
     def hydrate!

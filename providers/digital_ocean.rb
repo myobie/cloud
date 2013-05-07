@@ -1,53 +1,48 @@
 require 'providers/digital_ocean/api'
 require 'providers/digital_ocean/droplet'
+require 'net/ssh'
 
 module DigitalOcean
   class Provider
     attr_reader :config
 
+    # public provider api
     def initialize(opts = {})
       @config = opts
     end
 
-    def api
-      @api ||= begin
-        client_id = config.fetch("client_id") { ENV["DO_CLIENT_ID"] }
-        api_key   = config.fetch("api_key")   { ENV["DO_API_KEY"] }
-        DigitalOcean::Api.new(client_id, api_key)
-      end
-    end
-
-    def droplet_api
-      @droplet_api ||= DropletApi.new(self)
-    end
-
-    def sizes
-      response = api.get("/sizes")
-      if response["status"] == "OK"
-        response["sizes"]
-      end
-    end
-
-    def find_size_id(string)
-      found = sizes.find do |size|
-        size["name"].downcase.gsub(/ +/, '') == string.downcase.gsub(/ +/, '')
-      end
-
-      if found
-        found["id"]
-      end
-    end
-
     def exists?(box)
-      !!info(box)
+      !!get_box(box)
+    end
+
+    def ready?(box)
+      drop = get_box(box)
+      drop && drop.status == "active"
     end
 
     def info(box)
-      droplet_api.find_by_name(box.name)
+      drop = get_box(box)
+      if drop
+        drop.to_h
+      end
+    end
+
+    def exec(box, *commands)
+      drop = get_box(box)
+      user = box.user || config["user"]
+      Net::SSH.start(drop.ip, user) do |ssh|
+        if commands.length == 1
+          ssh.exec! commands.first
+        else
+          commands.map do |command|
+            ssh.exec! command
+          end
+        end
+      end
     end
 
     def destroy(box)
-      drop = droplet_api.find_by_name(box.name)
+      drop = get_box(box)
       if drop
         drop.destroy!
       end
@@ -79,6 +74,40 @@ module DigitalOcean
         end
 
         droplet_api.create(params)
+      end
+    end
+    # end of public provider api
+
+    def get_box(box)
+      droplet_api.find_by_name(box.name)
+    end
+
+    def api
+      @api ||= begin
+        client_id = config.fetch("client_id") { ENV["DO_CLIENT_ID"] }
+        api_key   = config.fetch("api_key")   { ENV["DO_API_KEY"] }
+        DigitalOcean::Api.new(client_id, api_key)
+      end
+    end
+
+    def droplet_api
+      @droplet_api ||= DropletApi.new(self)
+    end
+
+    def sizes
+      response = api.get("/sizes")
+      if response["status"] == "OK"
+        response["sizes"]
+      end
+    end
+
+    def find_size_id(string)
+      found = sizes.find do |size|
+        size["name"].downcase.gsub(/ +/, '') == string.downcase.gsub(/ +/, '')
+      end
+
+      if found
+        found["id"]
       end
     end
 
