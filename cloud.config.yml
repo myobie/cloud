@@ -1,5 +1,7 @@
 provider:
   ssh_key: Nathan's
+  region: San Francisco 1
+  image: Ubuntu 12.10 x64 Server
 
 external_ips:
   - 0.0.0.1

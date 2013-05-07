@@ -14,12 +14,26 @@ require 'boxes/application'
 require 'boxes/load_balancer'
 require 'boxes/resque'
 
+require 'providers/digital_ocean'
+
 Cloud.provider = DigitalOcean::Provider.new Cloud.config['provider']
 
 red1 = RedisBox.create "red1", redis: { databases: 4 }
 
 puts red1.inspect
 puts "red1 exists? #{red1.exists?.inspect}"
+if red1.exists?
+  puts "Destroying red1..."
+  success = Cloud.provider.destroy(red1).inspect
+  if success
+    puts "Destroyed red1."
+  else
+    puts "Couldn't destroy red1, here is it's current status: #{Cloud.provider.info(red1).inspect}"
+  end
+else
+  puts "Provisioning red1..."
+  puts Cloud.provider.provision(red1).inspect
+end
 
 
 

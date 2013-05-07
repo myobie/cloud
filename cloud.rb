@@ -27,4 +27,3 @@ end
 require './cloud/roles'
 require './cloud/role'
 require './cloud/box'
-require './cloud/provider'

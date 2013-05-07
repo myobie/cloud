@@ -6,7 +6,7 @@ class Cloud::Box
   include Cloud::Configurable
   include Cloud::Rendering
 
-  attr_accessor :name, :opts, :memory, :ip
+  attr_accessor :name, :opts, :memory, :ip, :image, :region
 
   def self.create(name, opts = {})
     box = new(name, opts)
@@ -38,6 +38,20 @@ class Cloud::Box
     @mem
   end
 
+  def self.region(reg = nil)
+    unless reg.nil?
+      @region = region
+    end
+    @region
+  end
+
+  def self.image(img = nil)
+    unless img.nil?
+      @image = img
+    end
+    @image
+  end
+
   def self.parse_opts(*opt_names)
     opt_names = Array(opt_names)
     attr_accessor(*opt_names)
@@ -51,7 +65,7 @@ class Cloud::Box
 
   def initialize(name, opts = {})
     @name = name
-    @config = self.class.config.deep_merge(opts).stringify
+    @config = self.class.config.deep_merge(opts.stringify)
     parse_opts!
   end
 
@@ -67,6 +81,8 @@ class Cloud::Box
 
   def parse_opts!
     @memory = config['memory'] || self.class.memory
+    @image = config['image'] || self.class.image
+    @region = config['region'] || self.class.region
     @ip = config['ip']
     @backups = !!config['backups']
   end
