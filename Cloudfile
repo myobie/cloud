@@ -16,39 +16,48 @@ require 'boxes/resque'
 
 Cloud.provider = DigitalOcean::Provider.new Cloud.config['provider']
 
-db1 = Database.create "db1"
-db2 = SlaveDatabase.create "db2", follow: db1, failover: true
+red1 = RedisBox.create "red1", redis: { databases: 4 }
 
-red1 = Redis.create "red1", redis: { databases: 4 }
-red2 = SlaveRedis.create "red2", follow: red1, failover: true
-
-mem1 = Memcached.create "mem1"
-
-app_config = {
-  memcached: mem1,
-  database: {
-    master: db1,
-    slave: db2
-  },
-  redis: {
-    master: red1,
-    slave: red2
-  },
-  git_url: "git://github.com/myobie/something.git"
-}
-
-app1 = Application.create "app1", app_config
-app2 = Application.create "app2", app_config
-
-apps = [app1, app2]
-
-LoadBalancer.create "lb1", ip: Cloud.config['external_ips'][0], balance: apps
-LoadBalancer.create "lb2", ip: Cloud.config['external_ips'][1], balance: apps
-
-Resque.create "job1", redis: red1, database: { master: db1, slave: db2 }
+puts red1.inspect
+puts "red1 exists? #{red1.exists?.inspect}"
 
 
 
-puts Cloud.boxes.inspect
-puts "*"*80
-puts red1.roles[:redis].config_file
+
+
+# db1 = Database.create "db1"
+# db2 = SlaveDatabase.create "db2", follow: db1, failover: true
+# 
+# red1 = Redis.create "red1", redis: { databases: 4 }
+# red2 = SlaveRedis.create "red2", follow: red1, failover: true
+# 
+# mem1 = Memcached.create "mem1"
+# 
+# app_config = {
+#   memcached: mem1,
+#   database: {
+#     master: db1,
+#     slave: db2
+#   },
+#   redis: {
+#     master: red1,
+#     slave: red2
+#   },
+#   git_url: "git://github.com/myobie/something.git"
+# }
+# 
+# app1 = Application.create "app1", app_config
+# app2 = Application.create "app2", app_config
+# 
+# apps = [app1, app2]
+# 
+# LoadBalancer.create "lb1", ip: Cloud.config['external_ips'][0], balance: apps
+# LoadBalancer.create "lb2", ip: Cloud.config['external_ips'][1], balance: apps
+# 
+# Resque.create "job1", redis: red1, database: { master: db1, slave: db2 }
+
+
+
+# puts Cloud.boxes.inspect
+# puts "*"*80
+# puts red1.roles[:redis].config_file

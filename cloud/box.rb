@@ -7,13 +7,13 @@ class Cloud::Box
   include Cloud::Rendering
 
   attr_accessor :name, :opts, :memory, :ip
-  
+
   def self.create(name, opts = {})
     box = new(name, opts)
     Cloud.boxes << box
     box
   end
-  
+
   def self.roles(*role_names)
     @role_names = Array(role_names)
     unless @role_names.empty?
@@ -23,14 +23,14 @@ class Cloud::Box
     end
     @roles
   end
-  
+
   def roles
     @roles ||= self.class.roles.reduce({}) do |memo, role|
       memo[role.name] = role.new(config)
       memo
     end
   end
-  
+
   def self.memory(mem = nil)
     unless mem.nil?
       @mem = mem
@@ -48,19 +48,23 @@ class Cloud::Box
       end
     end
   end
-  
+
   def initialize(name, opts = {})
     @name = name
-    @config = self.class.config.merge(opts).stringify
+    @config = self.class.config.deep_merge(opts).stringify
     parse_opts!
   end
-  
+
   def backups?
     !!@backups
   end
-  
+
+  def exists?
+    Cloud.provider.exists?(self)
+  end
+
   private
-  
+
   def parse_opts!
     @memory = config['memory'] || self.class.memory
     @ip = config['ip']

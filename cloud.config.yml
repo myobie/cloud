@@ -1,9 +1,6 @@
 provider:
-  client_key: abc
-  api_key: xyz
-  ssh_key_path: "~/.ssh/id_rsa"
-  ssh_user: jacob
-  
+  ssh_key: Nathan's
+
 external_ips:
   - 0.0.0.1
   - 0.0.0.2

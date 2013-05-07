@@ -6,7 +6,7 @@ class Cloud::Role
   include Cloud::Rendering
   
   def initialize(opts = {})
-    @config = self.class.config.merge(opts).stringify
+    @config = self.class.config.deep_merge(opts).stringify
   end
   
   def self.inherited(base)

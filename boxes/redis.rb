@@ -1,5 +1,5 @@
-class Redis < Cloud::Box
+class RedisBox < Cloud::Box
   memory "1GB"
-  config { Cloud.config['redis'] }
+  config { Cloud.config }
   roles :redis
 end
