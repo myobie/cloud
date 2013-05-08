@@ -1,4 +1,5 @@
 $: << __dir__
+$: << File.expand_path("./lib")
 
 require 'cloud'
 

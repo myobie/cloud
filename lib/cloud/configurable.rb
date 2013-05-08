@@ -8,7 +8,7 @@ module Cloud::Configurable
   module ClassMethods
     def config(hash = nil)
       @config ||= {}
-    
+
       unless hash.nil? && !block_given?
         unless hash.nil?
           @config = hash.stringify
@@ -17,7 +17,7 @@ module Cloud::Configurable
           @config = yield.stringify
         end
       end
-    
+
       @config
     end
   end

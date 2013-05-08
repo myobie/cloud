@@ -4,22 +4,22 @@ require 'cloud/rendering'
 class Cloud::Role
   include Cloud::Configurable
   include Cloud::Rendering
-  
+
   def initialize(opts = {})
     @config = self.class.config.deep_merge(opts.stringify)
   end
-  
+
   def self.inherited(base)
     Cloud::Roles.all << base
   end
-  
+
   def self.name(new_name = nil)
     unless new_name.nil?
       @name = new_name
     end
     @name
   end
-  
+
   def self.deps(*deps)
     deps = Array(deps)
     @deps ||= []

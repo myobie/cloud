@@ -24,6 +24,6 @@ module Cloud
   end
 end
 
-require './cloud/roles'
-require './cloud/role'
-require './cloud/box'
+require 'cloud/roles'
+require 'cloud/role'
+require 'cloud/box'
