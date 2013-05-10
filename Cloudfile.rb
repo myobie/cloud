@@ -1,7 +1,15 @@
 $: << __dir__
 $: << File.expand_path("./lib")
 
+require 'awesome_print'
+AwesomePrint.defaults = {
+  indent: 2,
+  index: false
+}
+
 require 'cloud'
+
+require 'deps/user'
 
 require 'roles/redis'
 require 'roles/application'
@@ -23,28 +31,32 @@ red1 = RedisBox.create "red1", redis: { databases: 4 }
 
 puts "red1 ruby object: #{red1.inspect}"
 puts "red1 exists? #{Cloud.provider.exists?(red1).inspect}"
-if Cloud.provider.exists?(red1)
-  puts "red1 info: #{Cloud.provider.info(red1).inspect}"
-  if Cloud.provider.ready?(red1)
-    puts "red1 exec: ls / =>"
-    puts Cloud.provider.exec(red1, "ls /").split("\n").inspect
-  else
-    puts "red1 is not ready to accept ssh commands yet"
-  end
-else
-  puts "Provisioning red1..."
-  puts Cloud.provider.provision(red1).inspect
-end
 
-if ARGV.include?("destroy")
-  puts "Destroying red1..."
-  if Cloud.provider.ready?(red1)
-    success = Cloud.provider.destroy(red1)
-    puts "success? #{success.inspect}"
-  else
-    puts "red1 is not active, so it cannot be destroyed yet"
-  end
-end
+puts "Dep graph for red1:"
+ap red1.dep_graph
+
+# if Cloud.provider.exists?(red1)
+#   puts "red1 info: #{Cloud.provider.info(red1).inspect}"
+#   if Cloud.provider.ready?(red1)
+#     puts "red1 exec: ls / =>"
+#     puts Cloud.provider.exec(red1, "ls /").split("\n").inspect
+#   else
+#     puts "red1 is not ready to accept ssh commands yet"
+#   end
+# else
+#   puts "Provisioning red1..."
+#   puts Cloud.provider.provision(red1).inspect
+# end
+
+# if ARGV.include?("destroy")
+#   puts "Destroying red1..."
+#   if Cloud.provider.ready?(red1)
+#     success = Cloud.provider.destroy(red1)
+#     puts "success? #{success.inspect}"
+#   else
+#     puts "red1 is not active, so it cannot be destroyed yet"
+#   end
+# end
 
 
 

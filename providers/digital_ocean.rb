@@ -27,9 +27,15 @@ module DigitalOcean
       end
     end
 
-    def exec(box, *commands)
+    def exec(box, *commands, as_root: false)
       drop = get_box(box)
-      user = box.user || config["user"]
+
+      user = if as_root
+        "root"
+      else
+        box.user || config["user"]
+      end
+
       Net::SSH.start(drop.ip, user) do |ssh|
         if commands.length == 1
           ssh.exec! commands.first

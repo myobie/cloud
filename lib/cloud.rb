@@ -24,6 +24,8 @@ module Cloud
   end
 end
 
+require 'cloud/deps'
+require 'cloud/dep'
 require 'cloud/roles'
 require 'cloud/role'
 require 'cloud/box'

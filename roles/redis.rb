@@ -1,13 +1,11 @@
 class RedisRole < Cloud::Role
-  name :redis
-
-  deps 'myobie.redis'
+  deps :user
 
   def config_file
     render file: "./templates/redis.conf.erb"
   end
 
-  with_config_scope('redis') do
+  inside :redis do
     use :daemonize
     use :port, default: 6379
     use :pidfile, default: "/var/run/redis.pid"

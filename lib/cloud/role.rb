@@ -1,8 +1,11 @@
 require 'cloud/configurable'
+require 'cloud/depable'
 require 'cloud/rendering'
+require 'cloud/ext/string'
 
 class Cloud::Role
   include Cloud::Configurable
+  include Cloud::Depable
   include Cloud::Rendering
 
   def initialize(opts = {})
@@ -17,18 +20,10 @@ class Cloud::Role
     unless new_name.nil?
       @name = new_name
     end
-    @name
-  end
-
-  def self.deps(*deps)
-    deps = Array(deps)
-    @deps ||= []
-
-    unless deps.empty?
-      @deps.concat(deps)
+    if @name.nil?
+      @name = super().gsub(/Role$/, '').underscore
     end
-
-    @deps
+    @name
   end
 
   def self.use(name, default: nil, query: nil, value: nil)
@@ -58,5 +53,8 @@ class Cloud::Role
     self.current_config_scopes.push(scope_name)
     yield
     self.current_config_scopes.pop
+  end
+  def self.inside(scope_name, &blk)
+    with_config_scope(scope_name, &blk)
   end
 end

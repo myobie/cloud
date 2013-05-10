@@ -31,6 +31,12 @@ class Cloud::Box
     end
   end
 
+  def dep_graph
+    roles.map do |name, role|
+      { "role:#{name}" => role.dep_graph }
+    end
+  end
+
   def self.memory(mem = nil)
     unless mem.nil?
       @mem = mem

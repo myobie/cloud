@@ -2,7 +2,7 @@ provider:
   ssh_key: Nathan's
   region: San Francisco 1
   image: Ubuntu 12.10 x64 Server
-  user: root
+  user: nathan
 
 external_ips:
   - 0.0.0.1
@@ -22,7 +22,7 @@ load_balancer:
       3001: 81
   rails:
     precompile_assets: true
-    
+
 application:
   nginx:
     proxy: unicorn
@@ -41,7 +41,7 @@ redis:
   redis:
     aof: false
     databases: 2
-    
+
 slave_redis:
   redis:
     aof: true
