@@ -30,6 +30,10 @@ module DigitalOcean
     def exec(box, *commands, as_root: false)
       drop = get_box(box)
 
+      unless drop
+        raise "couldn't find box #{box.name} at the provider"
+      end
+
       user = if as_root
         "root"
       else

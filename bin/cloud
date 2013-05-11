@@ -9,8 +9,10 @@ require 'cloud/commands'
 
 sub_commands = %w(check dep-graph)
 $global_opts = Trollop.options do
-  banner "cloud commands: check"
+  banner "cloud commands: #{sub_commands.join(", ")}"
   opt :awesome, "use awesome-print for inspects"
+  opt :trace, "show full backtrace when erroring"
+  opt :continue, "don't exit on errors"
   # stop_on sub_commands
 end
 

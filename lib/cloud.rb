@@ -1,5 +1,7 @@
 require 'yaml'
 
+$global_opts ||= {}
+
 module Cloud
   def self.provider
     @provider
@@ -17,6 +19,27 @@ module Cloud
     @config = if File.exists?(file)
       YAML::load_file(file)
     end
+  end
+
+  def self.p(message)
+    spaces = "  "*p_indent
+    puts "** #{spaces}#{message}"
+  end
+
+  def self.inc_p
+    @p_indent = p_indent + p_inc_amount
+  end
+
+  def self.dec_p
+    @p_indent = p_indent - p_inc_amount
+  end
+
+  def self.p_indent
+    @p_indent ||= 0
+  end
+
+  def self.p_inc_amount
+    2
   end
 end
 

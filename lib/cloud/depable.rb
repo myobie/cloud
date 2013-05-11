@@ -3,8 +3,14 @@ module Cloud::Depable
     base.extend ClassMethods
   end
 
-  def deps
+  def dep_names
     self.class.deps
+  end
+
+  def deps
+    @deps ||= self.class.dep_classes.map do |dep|
+      dep.new(box)
+    end
   end
 
   def dep_graph

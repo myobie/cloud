@@ -115,8 +115,45 @@ class Cloud::Box
     provider.provision(self)
   end
 
+  def roles_met?
+    if roles.empty?
+      true
+    else
+      roles.map do |role_name, role|
+        role.check!
+      end.all?
+    end
+  end
+
   def check!
-    raise "not finished"
+    Cloud.p "Checking box #{name} {"
+    Cloud.inc_p
+
+    if !exists?
+      Cloud.dec_p
+      Cloud.p "} failed because the box doesn't exist."
+      return false
+    end
+
+    if !ready?
+      Cloud.dec_p
+      Cloud.p "} failed because the box is not ready to accept ssh commands."
+      return false
+    end
+
+    if !roles_met?
+      Cloud.dec_p
+      Cloud.p "} failed."
+      return false
+    end
+
+    Cloud.dec_p
+    Cloud.p "} met."
+    true
+  rescue StandardError => e
+    Cloud.p "} failed, because of #{e}."
+    Cloud.p "exiting..."
+    exit 1
   end
 
   private

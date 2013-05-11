@@ -9,9 +9,41 @@ class Cloud::Role
   include Cloud::Depable
   include Cloud::Rendering
 
+  attr_reader :box
+
   def initialize(box)
     @box = box
     @config = self.class.config.deep_merge(box.config)
+  end
+
+  def deps_met?
+    if deps.empty?
+      true
+    else
+      deps.map do |dep|
+        dep.check!
+      end.all?
+    end
+  end
+
+  def check!
+    Cloud.p "Checking role #{name} {"
+    Cloud.inc_p
+    dm = deps_met?
+    Cloud.dec_p
+
+    if dm
+      Cloud.p "} met."
+    else
+      Cloud.p "} failed."
+    end
+  rescue StandardError => e
+    Cloud.p "} failed, because of #{e}."
+    Cloud.p(e.backtrace) if $global_opts[:trace]
+    unless $global_opts[:continue]
+      Cloud.p "exiting..."
+      exit(1)
+    end
   end
 
   def self.inherited(base)
@@ -26,6 +58,10 @@ class Cloud::Role
       @name = super().gsub(/Role$/, '').underscore
     end
     @name
+  end
+
+  def name
+    self.class.name
   end
 
   def self.use(name, default: nil, query: nil, value: nil)
