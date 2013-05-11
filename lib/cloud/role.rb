@@ -1,3 +1,4 @@
+require 'cloud/roles'
 require 'cloud/configurable'
 require 'cloud/depable'
 require 'cloud/rendering'
@@ -8,8 +9,9 @@ class Cloud::Role
   include Cloud::Depable
   include Cloud::Rendering
 
-  def initialize(opts = {})
-    @config = self.class.config.deep_merge(opts.stringify)
+  def initialize(box)
+    @box = box
+    @config = self.class.config.deep_merge(box.config)
   end
 
   def self.inherited(base)

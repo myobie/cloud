@@ -1,6 +1,7 @@
+require 'cloud/boxes'
+require 'cloud/roles'
 require 'cloud/configurable'
 require 'cloud/rendering'
-require 'cloud/roles'
 
 class Cloud::Box
   include Cloud::Configurable
@@ -10,7 +11,7 @@ class Cloud::Box
 
   def self.create(name, opts = {})
     box = new(name, opts)
-    Cloud.boxes << box
+    Cloud::Boxes.all << box
     box
   end
 
@@ -26,7 +27,7 @@ class Cloud::Box
 
   def roles
     @roles ||= self.class.roles.reduce({}) do |memo, role|
-      memo[role.name] = role.new(config)
+      memo[role.name] = role.new(self)
       memo
     end
   end

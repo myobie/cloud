@@ -1,12 +1,6 @@
 $: << __dir__
 $: << File.expand_path("./lib")
 
-require 'awesome_print'
-AwesomePrint.defaults = {
-  indent: 2,
-  index: false
-}
-
 require 'cloud'
 
 require 'deps/user'

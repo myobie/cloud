@@ -9,10 +9,6 @@ module Cloud
     @provider = p
   end
 
-  def self.boxes
-    @boxes ||= []
-  end
-
   def self.config
     return @config if defined?(@config)
 
@@ -24,8 +20,6 @@ module Cloud
   end
 end
 
-require 'cloud/deps'
 require 'cloud/dep'
-require 'cloud/roles'
 require 'cloud/role'
 require 'cloud/box'

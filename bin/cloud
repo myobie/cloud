@@ -7,16 +7,19 @@ require 'trollop'
 require 'cloud'
 require 'cloud/commands'
 
-sub_commands = %w(check)
-global_opts = Trollop.options do
+sub_commands = %w(check dep-graph)
+$global_opts = Trollop.options do
   banner "cloud commands: check"
-  stop_on sub_commands
+  opt :awesome, "use awesome-print for inspects"
+  # stop_on sub_commands
 end
 
 cmd = ARGV.shift
 opts = case cmd
 when "check"
   Cloud::Commands.check
+when "dep-graph"
+  Cloud::Commands.dep_graph
 when nil
   Trollop.die "didn't specify a command"
 else
