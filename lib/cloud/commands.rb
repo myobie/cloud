@@ -64,6 +64,7 @@ module Cloud::Commands
       Cloud.p "Provisioning box #{box.name}..."
       box.provision!
       if Cloud.wait(180) { box.ready? }
+        `ssh-keygen -f ~/.ssh/known_hosts -R #{box.info[:ip]} > /dev/null 2&>1`
         Cloud.p "#{box.name} provisioned and ready."
       else
         Cloud.p "taking more than 3 minutes, exiting."

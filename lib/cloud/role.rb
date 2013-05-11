@@ -58,8 +58,10 @@ class Cloud::Role
 
     if m
       Cloud.p "} met."
+      return true
     else
       Cloud.p "} failed."
+      return false
     end
   rescue StandardError => e
     Cloud.p "} failed, because of #{e}."
