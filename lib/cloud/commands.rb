@@ -34,4 +34,27 @@ module Cloud::Commands
     end
     inspect graph
   end
+
+  def provision(box_name)
+    box = Cloud::Boxes.find(box_name)
+
+    if box
+      if box.exists?
+        Cloud.p "Box #{box.name} already exists, not creating."
+        exit(1)
+      else
+        Cloud.p "Provisioning box #{box.name}..."
+        box.provision!
+        if Cloud.wait(60) { box.ready? }
+          Cloud.p "#{box.name} provisioned and ready."
+        else
+          Cloud.p "taking more than 60 seconds, exiting."
+          exit(1)
+        end
+      end
+    else
+      Cloud.p "Couldn't find the box #{box_name}"
+      exit(1)
+    end
+  end
 end

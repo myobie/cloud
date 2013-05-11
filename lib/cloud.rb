@@ -1,4 +1,5 @@
 require 'yaml'
+require 'timeout'
 
 $global_opts ||= {}
 
@@ -19,6 +20,13 @@ module Cloud
     @config = if File.exists?(file)
       YAML::load_file(file)
     end
+  end
+
+  def self.wait(num, &blk)
+    Timeout.timeout(num, &blk)
+    true
+  rescue Timeout::Error
+    false
   end
 
   def self.p(message)

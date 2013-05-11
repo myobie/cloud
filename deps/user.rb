@@ -31,6 +31,10 @@ class PasswordedUserDep < Cloud::Dep
 
   deps :passwordless_user
 
+  def username
+    config['user']
+  end
+
   def met?
     exec('cat /etc/shadow') =~ /^#{username}:[^\*!]/
   end

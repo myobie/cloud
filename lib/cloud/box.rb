@@ -129,19 +129,22 @@ class Cloud::Box
     Cloud.p "Checking box #{name} {"
     Cloud.inc_p
 
-    if !exists?
+    unless exists?
       Cloud.dec_p
       Cloud.p "} failed because the box doesn't exist."
       return false
     end
 
-    if !ready?
+    unless ready?
+      box_status = info['status']
+      Cloud.p "status: #{box_status}" if box_status
+
       Cloud.dec_p
       Cloud.p "} failed because the box is not ready to accept ssh commands."
       return false
     end
 
-    if !roles_met?
+    unless roles_met?
       Cloud.dec_p
       Cloud.p "} failed."
       return false
