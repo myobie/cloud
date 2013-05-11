@@ -22,15 +22,23 @@ module Cloud
     end
   end
 
-  def self.wait(num, &blk)
-    Timeout.timeout(num, &blk)
+  def self.wait(num = 60, sleep_amount = 2, &blk)
+    Timeout.timeout(num) do
+      while !blk.call
+        sleep(sleep_amount)
+        print "."
+        $stdout.flush
+      end
+    end
+    print "\n"
     true
   rescue Timeout::Error
+    print "\n"
     false
   end
 
   def self.p(message)
-    spaces = "  "*p_indent
+    spaces = " "*p_indent
     puts "** #{spaces}#{message}"
   end
 

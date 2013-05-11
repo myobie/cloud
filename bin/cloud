@@ -7,7 +7,7 @@ require 'trollop'
 require 'cloud'
 require 'cloud/commands'
 
-sub_commands = %w(check dep-graph provision)
+sub_commands = %w(check dep-graph provision destroy info make)
 $global_opts = Trollop.options do
   banner "cloud commands: #{sub_commands.join(", ")}"
   opt :awesome, "use awesome-print for inspects"
@@ -22,9 +22,20 @@ when "check"
   Cloud::Commands.check
 when "dep-graph"
   Cloud::Commands.dep_graph
+when "info"
+  Cloud::Commands.info
 when "provision"
   box_name = ARGV.shift
+  Trollop.die "no box_name given" unless box_name
   Cloud::Commands.provision(box_name)
+when "destroy"
+  box_name = ARGV.shift
+  Trollop.die "no box_name given" unless box_name
+  Cloud::Commands.destroy(box_name)
+when "make"
+  box_name = ARGV.shift
+  Trollop.die "no box_name given" unless box_name
+  Cloud::Commands.make(box_name)
 when nil
   Trollop.die "didn't specify a command"
 else

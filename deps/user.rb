@@ -1,3 +1,5 @@
+require 'securerandom'
+
 class UserDep < Cloud::Dep
   deps :passworded_user, :admin_group_can_sudo
 end
@@ -8,21 +10,20 @@ class PasswordlessUserDep < Cloud::Dep
   deps :admin_group
 
   def username
-    config['user']
+    Cloud.config['user']
   end
 
   def met?
-    exec('/etc/passwd') =~ /^#{username}:/
+    exec('cat /etc/passwd') =~ /^#{username}:/
   end
 
-  def home_dir_base
-    "/home/#{username}"
+  def home
+    "/home"
   end
 
   def meet
-    exec "mkdir -p #{home_dir_base}",
-         "useradd -m -s /bin/bash -b #{home_dir_base} -G admin #{username}",
-         "chmod 701 #{home_dir_base / username}"
+    exec "useradd -m -s /bin/bash -b /home -G admin #{username}",
+         "chmod 701 /home/#{username}"
   end
 end
 
@@ -32,7 +33,7 @@ class PasswordedUserDep < Cloud::Dep
   deps :passwordless_user
 
   def username
-    config['user']
+    Cloud.config['user']
   end
 
   def met?
@@ -40,9 +41,9 @@ class PasswordedUserDep < Cloud::Dep
   end
 
   def meet
-    password = SecureRandom.urlsafe_base64(64)
-    puts "New passowrd for #{username} is: #{password}"
-    exec %{echo "#{password}\n#{password}" | passwd #{username}}
+    password = SecureRandom.urlsafe_base64(32)
+    Cloud.p "-> New passowrd for #{username} is: #{password}"
+    exec %{echo "#{username}:#{password}" | chpasswd}
   end
 end
 
@@ -50,7 +51,7 @@ class AdminGroupDep < Cloud::Dep
   exec as_root: true
 
   def met?
-    exec('/etc/group') =~ /^admin\:/
+    exec('cat /etc/group') =~ /^admin\:/
   end
 
   def meet
@@ -64,7 +65,7 @@ class AdminGroupCanSudoDep < Cloud::Dep
   deps :admin_group
 
   def met?
-    exec('/etc/sudoers') =~ /^%admin\b/
+    exec('cat /etc/sudoers') =~ /^%admin\b/
   end
 
   def meet

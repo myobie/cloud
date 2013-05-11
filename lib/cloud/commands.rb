@@ -21,10 +21,29 @@ module Cloud::Commands
     end
   end
 
+  def info
+    Cloud::Boxes.all.map do |box|
+      Cloud.p "Box #{box.name}:"
+      Cloud.inc_p
+      if box.exists?
+        inspect box.info
+      else
+        Cloud.p "doesn't exist."
+      end
+    end
+    Cloud.dec_p
+    Cloud.p "Done."
+  end
+
   def check
     Cloud::Boxes.all.reduce({}) do |memo, box|
       memo[box.name] = box.check!
     end
+  end
+
+  def make(box_name)
+    box = find_box(box_name)
+    box.make!
   end
 
   def dep_graph(awesome: false)
@@ -36,22 +55,50 @@ module Cloud::Commands
   end
 
   def provision(box_name)
-    box = Cloud::Boxes.find(box_name)
+    box = find_box(box_name)
 
-    if box
-      if box.exists?
-        Cloud.p "Box #{box.name} already exists, not creating."
-        exit(1)
+    if box.exists?
+      Cloud.p "Box #{box.name} already exists, not creating."
+      exit(1)
+    else
+      Cloud.p "Provisioning box #{box.name}..."
+      box.provision!
+      if Cloud.wait(180) { box.ready? }
+        Cloud.p "#{box.name} provisioned and ready."
       else
-        Cloud.p "Provisioning box #{box.name}..."
-        box.provision!
-        if Cloud.wait(60) { box.ready? }
-          Cloud.p "#{box.name} provisioned and ready."
-        else
-          Cloud.p "taking more than 60 seconds, exiting."
-          exit(1)
-        end
+        Cloud.p "taking more than 3 minutes, exiting."
+        exit(1)
       end
+    end
+  end
+
+  def destroy(box_name)
+    box = find_box(box_name)
+
+    unless box.exists?
+      Cloud.p "Box #{box.name} doesn't exists, therefore cannot be destroyed."
+      exit(1)
+    end
+
+    unless box.ready?
+      Cloud.p "Box #{box.name} is not fully provisioned, therefore cannot be destroyed."
+      exit(1)
+    end
+
+    box.destroy!
+
+    if Cloud.wait { !box.ready? }
+      Cloud.p "#{box.name} destroyed."
+    else
+      Cloud.p "taking more than 60 seconds, exiting."
+      exit(1)
+    end
+  end
+
+  def find_box(box_name)
+    box = Cloud::Boxes.find(box_name)
+    if box
+      return box
     else
       Cloud.p "Couldn't find the box #{box_name}"
       exit(1)

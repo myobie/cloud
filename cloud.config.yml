@@ -4,6 +4,8 @@ provider:
   image: Ubuntu 12.10 x64 Server
   user: nathan
 
+user: nathan
+
 external_ips:
   - 0.0.0.1
   - 0.0.0.2

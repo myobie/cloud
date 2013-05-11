@@ -42,10 +42,23 @@ module Cloud
     end
 
     def met?
-      false
+      true
+    end
+
+    def meet
     end
 
     def deps_met?
+      if deps.empty?
+        true
+      else
+        deps.map do |dep|
+          dep.met?
+        end.all?
+      end
+    end
+
+    def deps_check?
       if deps.empty?
         true
       else
@@ -55,23 +68,75 @@ module Cloud
       end
     end
 
-    def meet
-      raise "meet is not defined"
-    end
-
     def check!
       Cloud.p "Checking dep #{name} {"
       Cloud.inc_p
-      dm = deps_met?
+      dm = deps_check?
       mm = met?
       Cloud.dec_p
 
       if dm && mm
         Cloud.p "} met."
+        return true
       elsif mm
         Cloud.p "} failed because of a nested dep."
+        return false
       else
         Cloud.p "} failed."
+        return false
+      end
+    rescue StandardError => e
+      Cloud.p "} failed, because of #{e}."
+      Cloud.p(e.backtrace) if $global_opts[:trace]
+      unless $global_opts[:continue]
+        Cloud.p "exiting..."
+        exit(1)
+      end
+    end
+
+    def make!
+      Cloud.p "Dep #{name} {"
+      Cloud.inc_p
+
+      nested_success = if deps.empty?
+        true
+      else
+        deps.map do |dep|
+          dep.make!
+        end.all?
+      end
+
+      Cloud.dec_p
+
+      unless nested_success
+        Cloud.p "} failed because of nested dep failure."
+        return false
+      end
+
+      if met?
+        Cloud.p "} met."
+        return true
+      end
+
+      begin
+        Cloud.p "-> meeting..."
+        meet_output = meet
+      rescue StandardError => e
+        Cloud.p "Error: #{e}."
+        Cloud.p(e.backtrace.join("\n")) if $global_opts[:trace]
+        unless $global_opts[:continue]
+          Cloud.p "exiting..."
+          exit(1)
+        end
+      end
+
+      if met?
+        Cloud.p "} met."
+        return true
+      else
+        Cloud.p "} failed, couldn't meet."
+        Cloud.p ">> \n#{meet_output.join("\n")}" if $global_opts[:trace]
+        return false
       end
     rescue StandardError => e
       Cloud.p "} failed, because of #{e}."
@@ -86,5 +151,11 @@ module Cloud
       as_root = as_root || self.class.exec[:as_root]
       @box.exec(*commands, as_root: as_root)
     end
+
+    def exec_and_log(*commands, as_root: false)
+      as_root = as_root || self.class.exec[:as_root]
+      @box.exec_and_log(*commands, as_root: as_root)
+    end
+    alias el exec_and_log
   end
 end

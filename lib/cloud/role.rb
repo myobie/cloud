@@ -16,7 +16,7 @@ class Cloud::Role
     @config = self.class.config.deep_merge(box.config)
   end
 
-  def deps_met?
+  def deps_check?
     if deps.empty?
       true
     else
@@ -29,10 +29,34 @@ class Cloud::Role
   def check!
     Cloud.p "Checking role #{name} {"
     Cloud.inc_p
-    dm = deps_met?
+    dm = deps_check?
     Cloud.dec_p
 
     if dm
+      Cloud.p "} met."
+      return true
+    else
+      Cloud.p "} failed."
+      return false
+    end
+  rescue StandardError => e
+    Cloud.p "} failed, because of #{e}."
+    Cloud.p(e.backtrace) if $global_opts[:trace]
+    unless $global_opts[:continue]
+      Cloud.p "exiting..."
+      exit(1)
+    end
+  end
+
+  def make!
+    Cloud.p "Role #{name} {"
+    Cloud.inc_p
+    m = deps.map do |dep|
+      dep.make!
+    end.all?
+    Cloud.dec_p
+
+    if m
       Cloud.p "} met."
     else
       Cloud.p "} failed."
