@@ -1,0 +1,24 @@
+#! /usr/bin/env ruby
+
+$: << File.expand_path("..")
+require './Cloudfile'
+
+require 'trollop'
+require 'cloud'
+require 'cloud/commands'
+
+sub_commands = %w(check)
+global_opts = Trollop.options do
+  banner "cloud commands: check"
+  stop_on sub_commands
+end
+
+cmd = ARGV.shift
+opts = case cmd
+when "check"
+  Cloud::Commands.check
+when nil
+  Trollop.die "didn't specify a command"
+else
+  Trollop.die "unknown command #{cmd.inspect}"
+end

@@ -86,6 +86,38 @@ class Cloud::Box
     !!@backups
   end
 
+  def provider
+    @provider ||= Cloud.provider
+  end
+
+  def exists?
+    provider.exists?(self)
+  end
+
+  def ready?
+    provider.ready?(self)
+  end
+
+  def info
+    provider.info(self)
+  end
+
+  def exec(*commands, as_root: false)
+    provider.exec(self, *commands, as_root: as_root)
+  end
+
+  def destroy!
+    provider.destroy(self)
+  end
+
+  def provision!
+    provider.provision(self)
+  end
+
+  def check!
+    raise "not finished"
+  end
+
   private
 
   def parse_opts!
@@ -95,5 +127,6 @@ class Cloud::Box
     @user = config['user'] || self.class.user
     @ip = config['ip']
     @backups = !!config['backups']
+    @provider = config['provider']
   end
 end

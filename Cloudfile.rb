@@ -29,11 +29,11 @@ Cloud.provider = DigitalOcean::Provider.new Cloud.config['provider']
 
 red1 = RedisBox.create "red1", redis: { databases: 4 }
 
-puts "red1 ruby object: #{red1.inspect}"
-puts "red1 exists? #{Cloud.provider.exists?(red1).inspect}"
+# puts "red1 ruby object: #{red1.inspect}"
+# puts "red1 exists? #{Cloud.provider.exists?(red1).inspect}"
 
-puts "Dep graph for red1:"
-ap red1.dep_graph
+# puts "Dep graph for red1:"
+# ap red1.dep_graph
 
 # if Cloud.provider.exists?(red1)
 #   puts "red1 info: #{Cloud.provider.info(red1).inspect}"
