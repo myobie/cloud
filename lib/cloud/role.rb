@@ -3,11 +3,13 @@ require 'cloud/configurable'
 require 'cloud/depable'
 require 'cloud/rendering'
 require 'cloud/ext/string'
+require 'cloud/logging'
 
 class Cloud::Role
   include Cloud::Configurable
   include Cloud::Depable
   include Cloud::Rendering
+  include Cloud::Logging
 
   attr_reader :box
 
@@ -27,48 +29,36 @@ class Cloud::Role
   end
 
   def check!
-    Cloud.p "Checking role #{name} {"
-    Cloud.inc_p
-    dm = deps_check?
-    Cloud.dec_p
+    dm = nil
+
+    log "Checking role #{name} {" do
+      dm = deps_check?
+    end
 
     if dm
-      Cloud.p "} met."
+      log "} met."
       return true
     else
-      Cloud.p "} failed."
+      log "} failed."
       return false
-    end
-  rescue StandardError => e
-    Cloud.p "} failed, because of #{e}."
-    Cloud.p(e.backtrace) if $global_opts[:trace]
-    unless $global_opts[:continue]
-      Cloud.p "exiting..."
-      exit(1)
     end
   end
 
   def make!
-    Cloud.p "Role #{name} {"
-    Cloud.inc_p
-    m = deps.map do |dep|
-      dep.make!
-    end.all?
-    Cloud.dec_p
+    m = nil
+
+    log "Role #{name} {" do
+      m = deps.map do |dep|
+        dep.make!
+      end.all?
+    end
 
     if m
-      Cloud.p "} met."
+      log "} met."
       return true
     else
-      Cloud.p "} failed."
+      log "} failed."
       return false
-    end
-  rescue StandardError => e
-    Cloud.p "} failed, because of #{e}."
-    Cloud.p(e.backtrace) if $global_opts[:trace]
-    unless $global_opts[:continue]
-      Cloud.p "exiting..."
-      exit(1)
     end
   end
 

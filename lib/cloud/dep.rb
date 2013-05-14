@@ -2,12 +2,16 @@ require 'cloud/deps'
 require 'cloud/depable'
 require 'cloud/configurable'
 require 'cloud/rendering'
+require 'cloud/logging'
+require 'cloud/rescuer'
 
 module Cloud
   class Dep
     include Cloud::Configurable
     include Cloud::Depable
     include Cloud::Rendering
+    include Cloud::Logging
+    include Cloud::Rescuer
 
     attr_reader :box
 
@@ -69,81 +73,61 @@ module Cloud
     end
 
     def check!
-      Cloud.p "Checking dep #{name} {"
-      Cloud.inc_p
-      dm = deps_check?
-      mm = met?
-      Cloud.dec_p
+      dm = nil
+      mm = nil
+
+      log "Checking dep #{name} {" do
+        dm = deps_check?
+        mm = met?
+      end
 
       if dm && mm
-        Cloud.p "} met."
+        log "} met."
         return true
       elsif mm
-        Cloud.p "} failed because of a nested dep."
+        log "} failed because of a nested dep."
         return false
       else
-        Cloud.p "} failed."
+        log "} failed."
         return false
-      end
-    rescue StandardError => e
-      Cloud.p "} failed, because of #{e}."
-      Cloud.p(e.backtrace) if $global_opts[:trace]
-      unless $global_opts[:continue]
-        Cloud.p "exiting..."
-        exit(1)
       end
     end
 
     def make!
-      Cloud.p "Dep #{name} {"
-      Cloud.inc_p
+      nested_success = nil
 
-      nested_success = if deps.empty?
-        true
-      else
-        deps.map do |dep|
-          dep.make!
-        end.all?
-      end
-
-      Cloud.dec_p
-
-      unless nested_success
-        Cloud.p "} failed because of nested dep failure."
-        return false
-      end
-
-      if met?
-        Cloud.p "} met."
-        return true
-      end
-
-      begin
-        Cloud.p "-> meeting..."
-        meet_output = meet
-      rescue StandardError => e
-        Cloud.p "Error: #{e}."
-        Cloud.p(e.backtrace.join("\n")) if $global_opts[:trace]
-        unless $global_opts[:continue]
-          Cloud.p "exiting..."
-          exit(1)
+      log "Dep #{name} {" do
+        nested_success = if deps.empty?
+          true
+        else
+          deps.map do |dep|
+            dep.make!
+          end.all?
         end
       end
 
-      if met?
-        Cloud.p "} met."
-        return true
-      else
-        Cloud.p "} failed, couldn't meet."
-        Cloud.p ">> \n#{meet_output.join("\n")}" if $global_opts[:trace]
+      unless nested_success
+        log "} failed because of nested dep failure."
         return false
       end
-    rescue StandardError => e
-      Cloud.p "} failed, because of #{e}."
-      Cloud.p(e.backtrace) if $global_opts[:trace]
-      unless $global_opts[:continue]
-        Cloud.p "exiting..."
-        exit(1)
+
+      if met?
+        log "} met."
+        return true
+      end
+
+      rescuer do
+        log "-> meeting..."
+        meet_output = meet
+      end
+
+      if met?
+        log "} met."
+        return true
+      else
+        log "} failed, couldn't meet."
+        log ">> \n#{meet_output.join("\n")}" if $global_opts[:trace]
+        return false
       end
     end
 

@@ -12,6 +12,9 @@ module DigitalOcean
       response = api.get("/droplets")
       if response["status"] == "OK"
         response["droplets"].map { |d| Droplet.new(self, d) }
+      else
+        puts response.inspect
+        exit 1
       end
     end
 

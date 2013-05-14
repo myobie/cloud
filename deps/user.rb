@@ -42,7 +42,7 @@ class PasswordedUserDep < Cloud::Dep
 
   def meet
     password = SecureRandom.urlsafe_base64(32)
-    Cloud.p "-> New passowrd for #{username} is: #{password}"
+    log "-> New passowrd for #{username} is: #{password}"
     exec %{echo "#{username}:#{password}" | chpasswd}
   end
 end
