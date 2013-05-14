@@ -3,11 +3,13 @@ require 'cloud/roles'
 require 'cloud/configurable'
 require 'cloud/rendering'
 require 'cloud/logging'
+require 'cloud/depable'
 
 class Cloud::Box
   include Cloud::Configurable
   include Cloud::Rendering
   include Cloud::Logging
+  include Cloud::Depable
 
   attr_accessor :name, :opts, :memory, :ip, :image, :region, :user
 
@@ -17,10 +19,31 @@ class Cloud::Box
     box
   end
 
+  def box
+    self
+  end
+  
+  def as_root
+    original_user = user
+    self.user = "root"
+    result = yield
+    self.user = original_user
+    result
+  end
+
+  class << self
+    alias bootstrap_with deps
+  end
+
   def dep_graph
-    roles.map do |name, role|
-      { "role:#{name}" => role.dep_graph }
-    end
+    {
+      "deps" => deps.map do |dep|
+         { dep.name => dep.dep_graph }
+      end,
+      "roles" => roles.map do |role|
+         { role.name => { "deps" => role.dep_graph } }
+      end
+    }
   end
 
   def self.memory(mem = nil)

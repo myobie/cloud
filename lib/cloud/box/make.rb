@@ -1,29 +1,58 @@
 module Cloud::Box::Make
 
   def make!
-    m = nil
-
-    log "Box #{name} {" do
-      unless must_exist_and_be_ready!
-        return false
+    if check_exists? && check_ready?
+      bootstrap! && sync! && setup_there! && bootup!
+    end
+  end
+  
+  def bootstrap!
+    m = log "Bootstrap {" do
+      as_root do
+        deps.map do |dep|
+          dep.make!
+        end.all?
       end
+    end
 
-      m = roles.map do |name, role|
+    if m
+      log "} done."
+      return true
+    else
+      log "} bootstrap failed."
+      return false
+    end
+  end
+
+  def sync!
+    log "Sync step not ready yet, skipping"
+    true
+  end
+
+  def setup_there!
+    log "Setup step not ready yet, skipping"
+    true
+  end
+
+  def setup_here!
+    m = log "Setup {" do
+      roles.map do |role|
         role.make!
       end.all?
     end
 
     if m
-      log "} met."
+      log "} done."
       return true
     else
-      log "} failed."
+      log "} setup failed."
       return false
     end
-  rescue StandardError => e
-    log "} failed, because of #{e}."
-    log "exiting..."
-    exit 1
+  end
+
+  def bootup!
+    log "Bootup step not ready yet, skipping"
+    true
   end
 
 end

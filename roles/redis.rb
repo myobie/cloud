@@ -1,5 +1,4 @@
 class RedisRole < Cloud::Role
-  deps :user
 
   def config_file
     render file: "./templates/redis.conf.erb"

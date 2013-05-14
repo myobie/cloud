@@ -15,18 +15,18 @@ module Cloud::Box::ProviderApi
     provider.info(self)
   end
 
-  def exec(*commands, as_root: false)
-    provider.exec(self, *commands, as_root: as_root)
+  def exec(*commands)
+    provider.exec(self, *commands)
   end
 
-  def exec_and_log(*commands, as_root: false)
+  def exec_and_log(*commands)
     log do
       commands.each do |command|
         log "> #{command}"
       end
     end
 
-    exec(*commands, as_root: as_root)
+    exec(*commands)
   end
   alias el exec_and_log
 

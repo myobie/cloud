@@ -19,7 +19,7 @@ module Cloud
       unless opts.nil? || opts.empty?
         @exec_opts = opts
       end
-      @exec_opts
+      @exec_opts ||= {}
     end
 
     def self.name(new_name = nil)
@@ -73,20 +73,13 @@ module Cloud
     end
 
     def check!
-      dm = nil
-      mm = nil
-
-      log "Checking dep #{name} {" do
-        dm = deps_check?
-        mm = met?
+      success = log "Checking dep #{name} {" do
+        deps_check? && met?
       end
 
-      if dm && mm
+      if success
         log "} met."
         return true
-      elsif mm
-        log "} failed because of a nested dep."
-        return false
       else
         log "} failed."
         return false
@@ -116,6 +109,8 @@ module Cloud
         return true
       end
 
+      meet_output = []
+
       rescuer do
         log "-> meeting..."
         meet_output = meet
@@ -131,14 +126,12 @@ module Cloud
       end
     end
 
-    def exec(*commands, as_root: false)
-      as_root = as_root || self.class.exec[:as_root]
-      @box.exec(*commands, as_root: as_root)
+    def exec(*commands)
+      @box.exec(*commands)
     end
 
-    def exec_and_log(*commands, as_root: false)
-      as_root = as_root || self.class.exec[:as_root]
-      @box.exec_and_log(*commands, as_root: as_root)
+    def exec_and_log(*commands)
+      @box.exec_and_log(*commands)
     end
     alias el exec_and_log
   end

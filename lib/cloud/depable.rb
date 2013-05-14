@@ -17,6 +17,16 @@ module Cloud::Depable
     self.class.dep_graph
   end
 
+  def deps_check?
+    if deps.empty?
+      true
+    else
+      deps.map do |dep|
+        dep.check!
+      end.all?
+    end
+  end
+
   module ClassMethods
     def deps(*deps)
       deps = Array(deps)
@@ -27,6 +37,10 @@ module Cloud::Depable
       end
 
       @deps
+    end
+
+    def dep_opts
+      @dep_opts ||= {}
     end
 
     def dep_classes

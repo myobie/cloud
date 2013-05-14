@@ -27,18 +27,14 @@ module DigitalOcean
       end
     end
 
-    def exec(box, *commands, as_root: false)
+    def exec(box, *commands)
       drop = get_box(box)
 
       unless drop
         raise "couldn't find box #{box.name} at the provider"
       end
 
-      user = if as_root
-        "root"
-      else
-        box.user || config["user"]
-      end
+      user = $ssh_user_override || box.user || config["user"]
 
       Net::SSH.start(drop.ip, user) do |ssh|
         if commands.length == 1

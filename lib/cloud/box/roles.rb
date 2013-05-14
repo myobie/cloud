@@ -4,9 +4,8 @@ module Cloud::Box::Roles
   end
 
   def roles
-    @roles ||= self.class.roles.reduce({}) do |memo, role|
-      memo[role.name] = role.new(self)
-      memo
+    @roles ||= self.class.roles.map do |role|
+      role.new(self)
     end
   end
 

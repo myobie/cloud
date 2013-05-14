@@ -18,16 +18,6 @@ class Cloud::Role
     @config = self.class.config.deep_merge(box.config)
   end
 
-  def deps_check?
-    if deps.empty?
-      true
-    else
-      deps.map do |dep|
-        dep.check!
-      end.all?
-    end
-  end
-
   def check!
     dm = nil
 

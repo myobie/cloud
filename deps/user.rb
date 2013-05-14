@@ -5,8 +5,6 @@ class UserDep < Cloud::Dep
 end
 
 class PasswordlessUserDep < Cloud::Dep
-  exec as_root: true
-
   deps :admin_group
 
   def username
@@ -28,8 +26,6 @@ class PasswordlessUserDep < Cloud::Dep
 end
 
 class PasswordedUserDep < Cloud::Dep
-  exec as_root: true
-
   deps :passwordless_user
 
   def username
@@ -48,8 +44,6 @@ class PasswordedUserDep < Cloud::Dep
 end
 
 class AdminGroupDep < Cloud::Dep
-  exec as_root: true
-
   def met?
     exec('cat /etc/group') =~ /^admin\:/
   end
@@ -60,8 +54,6 @@ class AdminGroupDep < Cloud::Dep
 end
 
 class AdminGroupCanSudoDep < Cloud::Dep
-  exec as_root: true
-
   deps :admin_group
 
   def met?
