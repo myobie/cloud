@@ -1,5 +1,10 @@
 module Cloud::Box::Check
-  def roles_check?
+  def roles_check_there?
+    log "Roles: can't check roles over there until sync works"
+    true
+  end
+
+  def roles_check_here?
     if roles.empty?
       true
     else
@@ -37,11 +42,11 @@ module Cloud::Box::Check
 
   def check!
     success = log "Checking box #{name} {" do
-      check_exists? && check_ready? && deps_check? && roles_check?
+      check_exists? && check_ready? && deps_check? && roles_check_there?
     end
     
     if success
-      log "} met."
+      log "}"
       return true
     else
       log "} failed."
