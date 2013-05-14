@@ -34,12 +34,6 @@ module Cloud::Box::Check
     end
   end
 
-  def deps_check?
-    as_root do
-      super
-    end
-  end
-
   def check!
     success = log "Checking box #{name} {" do
       check_exists? && check_ready? && deps_check? && roles_check_there?

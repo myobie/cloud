@@ -22,14 +22,6 @@ class Cloud::Box
   def box
     self
   end
-  
-  def as_root
-    original_user = user
-    self.user = "root"
-    result = yield
-    self.user = original_user
-    result
-  end
 
   class << self
     alias bootstrap_with deps

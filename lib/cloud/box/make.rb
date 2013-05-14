@@ -8,11 +8,9 @@ module Cloud::Box::Make
   
   def bootstrap!
     m = log "Bootstrap {" do
-      as_root do
-        deps.map do |dep|
-          dep.make!
-        end.all?
-      end
+      deps.map do |dep|
+        dep.make!
+      end.all?
     end
 
     if m

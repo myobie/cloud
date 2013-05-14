@@ -18,40 +18,6 @@ class Cloud::Role
     @config = self.class.config.deep_merge(box.config)
   end
 
-  def check!
-    dm = nil
-
-    log "Checking role #{name} {" do
-      dm = deps_check?
-    end
-
-    if dm
-      log "} met."
-      return true
-    else
-      log "} failed."
-      return false
-    end
-  end
-
-  def make!
-    m = nil
-
-    log "Role #{name} {" do
-      m = deps.map do |dep|
-        dep.make!
-      end.all?
-    end
-
-    if m
-      log "} met."
-      return true
-    else
-      log "} failed."
-      return false
-    end
-  end
-
   def self.inherited(base)
     Cloud::Roles.all << base
   end
@@ -70,35 +36,11 @@ class Cloud::Role
     self.class.name
   end
 
-  def self.use(name, default: nil, query: nil, value: nil)
-    query ||= :"#{name}?"
-    value ||= name
-    default_method_name = :"default_#{value}"
-    config_scope = self.current_config_scopes.join(".")
+  require 'cloud/role/check'
+  require 'cloud/role/make'
+  require 'cloud/role/config'
 
-    define_method query do
-      !!config_for_keys(config_scope, name)
-    end
-
-    define_method default_method_name do
-      default
-    end
-
-    define_method value do
-      config_for_keys(config_scope, name) || send(default_method_name)
-    end
-  end
-
-  def self.current_config_scopes
-    @current_config_scopes ||= []
-  end
-
-  def self.with_config_scope(scope_name)
-    self.current_config_scopes.push(scope_name)
-    yield
-    self.current_config_scopes.pop
-  end
-  def self.inside(scope_name, &blk)
-    with_config_scope(scope_name, &blk)
-  end
+  include Cloud::Role::Check
+  include Cloud::Role::Make
+  include Cloud::Role::Config
 end

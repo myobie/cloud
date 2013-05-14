@@ -12,16 +12,16 @@ class PasswordlessUserDep < Cloud::Dep
   end
 
   def met?
-    exec('cat /etc/passwd') =~ /^#{username}:/
-  end
-
-  def home
-    "/home"
+    as_root do
+      exec('cat /etc/passwd') =~ /^#{username}:/
+    end
   end
 
   def meet
-    exec "useradd -m -s /bin/bash -b /home -G admin #{username}",
-         "chmod 701 /home/#{username}"
+    as_root do
+      exec "useradd -m -s /bin/bash -b /home -G admin #{username}",
+           "chmod 701 /home/#{username}"
+    end
   end
 end
 
@@ -33,23 +33,31 @@ class PasswordedUserDep < Cloud::Dep
   end
 
   def met?
-    exec('cat /etc/shadow') =~ /^#{username}:[^\*!]/
+    as_root do
+      exec('cat /etc/shadow') =~ /^#{username}:[^\*!]/
+    end
   end
 
   def meet
     password = SecureRandom.urlsafe_base64(32)
     log "-> New passowrd for #{username} is: #{password}"
-    exec %{echo "#{username}:#{password}" | chpasswd}
+    as_root do
+      exec %{echo "#{username}:#{password}" | chpasswd}
+    end
   end
 end
 
 class AdminGroupDep < Cloud::Dep
   def met?
-    exec('cat /etc/group') =~ /^admin\:/
+    as_root do
+      exec('cat /etc/group') =~ /^admin\:/
+    end
   end
 
   def meet
-    exec 'groupadd admin'
+    as_root do
+      exec 'groupadd admin'
+    end
   end
 end
 
@@ -57,10 +65,14 @@ class AdminGroupCanSudoDep < Cloud::Dep
   deps :admin_group
 
   def met?
-    exec('cat /etc/sudoers') =~ /^%admin\b/
+    as_root do
+      exec('cat /etc/sudoers') =~ /^%admin\b/
+    end
   end
 
   def meet
-    exec %{echo "%admin  ALL=(ALL) ALL\n" >> /etc/sudoers}
+    as_root do
+      exec %{echo "%admin  ALL=(ALL) ALL\n" >> /etc/sudoers}
+    end
   end
 end
